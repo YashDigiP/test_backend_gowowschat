@@ -1,14 +1,14 @@
 from .llm_routes import register_llm_routes
 # from .db_routes import register_db_routes
-# from .kb_routes import register_kb_routes
+from .kb_routes import register_kb_routes
 # from .export_routes import register_export_routes
 # from .web_routes import register_web_routes
 # from .pdf_route import register_pdf_routes
 from .auth_routes import register_auth_routes  
-# from .outline_routes import register_outline_routes
+from .outline_routes import register_outline_routes
 # from .feedback_routes import register_feedback_routes
 # from .excel_routes import register_excel_routes
-# from .curated_routes import register_curated_routes
+from .curated_routes import register_curated_routes
 from flask import send_file, abort
 import os
 
@@ -16,14 +16,14 @@ def register_routes(app):
     register_llm_routes(app)
     # register_pdf_routes(app)
     # register_db_routes(app)
-    # register_kb_routes(app)
+    register_kb_routes(app)
     # register_export_routes(app)
     # register_web_routes(app)
     register_auth_routes(app) 
-    # register_outline_routes(app)
+    register_outline_routes(app)
     # register_feedback_routes(app)
     # register_excel_routes(app)
-    # register_curated_routes(app)
+    register_curated_routes(app)
 
     app.static_folder = 'kb'
 

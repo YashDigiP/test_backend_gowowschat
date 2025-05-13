@@ -23,10 +23,11 @@ os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 # === Embedding & Mongo Setup ===
 model = LLM_MODELS["ask_kb"]
 print(f"🔍 Using model for Ask KB: {model}")
-embedding_model = OllamaEmbeddings(model=model)
+embedding_model = OllamaEmbeddings(model="nomic-embed-text")
 client = MongoClient("mongodb://localhost:27017/")
 db = client["gowowschat_db"]
 cache_col = db["kb_answer_cache"]
+
 
 # === Cosine Similarity ===
 def cosine_similarity(vec1, vec2):
@@ -34,6 +35,7 @@ def cosine_similarity(vec1, vec2):
     norm1 = sum(x * x for x in vec1) ** 0.5
     norm2 = sum(y * y for y in vec2) ** 0.5
     return dot / (norm1 * norm2)
+
 
 # === Semantic Match with Cached Embeddings ===
 def get_semantic_match(pdf_path, query, threshold=0.9):
@@ -54,6 +56,7 @@ def get_semantic_match(pdf_path, query, threshold=0.9):
             best_match = doc["answer"]
 
     return best_match + " (From Semantic Cache)" if best_score >= threshold else None
+
 
 # === Cache Ops ===
 def get_cached_answer(pdf_path, query):
@@ -121,15 +124,12 @@ def list_kb_folders():
     return kb_list
 
 
-
-
-
-
 def list_kb_folder(folder, subfolder):
     full_path = os.path.join(KB_ROOT, folder, subfolder)
     if not os.path.exists(full_path):
         return None
     return [f for f in os.listdir(full_path) if f.endswith(".pdf")]
+
 
 # === Upload ===
 def save_uploaded_pdf(folder, subfolder, file):
@@ -143,51 +143,80 @@ def save_uploaded_pdf(folder, subfolder, file):
     file.save(file_path)
     return safe_folder, safe_subfolder, filename
 
+
 # === Ask KB ===
+def get_hashed_path(relative_path: str) -> str:
+    normalized = os.path.normpath(relative_path).replace("\\", "/")
+    return hashlib.sha256(normalized.encode()).hexdigest()
+
+
 def ask_kb_path(path, query):
-    if not path or not query:
-        return "Missing path or query"
+    try:
+        print(f"🟢 Ask KB called with path: {path}, question: {query}")
 
-    parts = path.split("/")
-    if len(parts) != 3:
-        raise FileNotFoundError("Invalid path format. Expected 'folder/subfolder/pdf'")
+        if not path or not query:
+            return "Missing path or query"
 
-    folder, subfolder, pdf = parts
-    full_path = os.path.join(KB_ROOT, folder, subfolder, pdf)
+        parts = path.split("/")
+        if len(parts) != 3:
+            raise FileNotFoundError("Invalid path format. Expected 'folder/subfolder/pdf'")
 
-    if not os.path.exists(full_path):
-        raise FileNotFoundError("PDF not found")
+        folder, subfolder, pdf = parts
+        full_path = os.path.join(KB_ROOT, folder, subfolder, pdf)
 
-    # 1. Exact Cache
-    cached = get_cached_answer(full_path, query)
-    if cached:
-        return cached
+        if not os.path.exists(full_path):
+            raise FileNotFoundError("PDF not found")
 
-    # 2. Semantic Match
-    semantic_match = get_semantic_match(full_path, query)
-    if semantic_match:
-        return semantic_match
+        # === Step 1: Exact cache
+        cached = get_cached_answer(full_path, query)
+        if cached:
+            print("✅ Found exact cached answer")
+            return cached
 
-    # 3. Vector Search (Fallback)
-    path_hash = hashlib.sha256(path.encode()).hexdigest()
-    vector_store_path = os.path.join(VECTOR_STORE_DIR, path_hash)
+        # === Step 2: Semantic match
+        semantic_match = get_semantic_match(full_path, query)
+        if semantic_match:
+            print("✅ Found semantic match")
+            return semantic_match
 
-    if os.path.exists(vector_store_path):
-        db = FAISS.load_local(vector_store_path, embeddings=embedding_model, allow_dangerous_deserialization=True)
-    else:
-        loader = PyPDFLoader(full_path)
-        pages = loader.load_and_split()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        docs = text_splitter.split_documents(pages)
-        db = FAISS.from_documents(docs, embedding_model)
-        db.save_local(vector_store_path)
+        # === Step 3: Vector search fallback
+        relative_path = os.path.join("KB", path)
+        path_hash = get_hashed_path(relative_path)
+        vector_store_path = os.path.join(VECTOR_STORE_DIR, path_hash)
 
-    relevant_docs = db.similarity_search(query)
-    chain = load_qa_chain(Ollama(model=model), chain_type="stuff")
-    answer = chain.run(input_documents=relevant_docs, question=query)
+        print(f"📁 Loading vector store at: {vector_store_path}")
 
-    store_cached_answer(full_path, query, answer)
-    return answer + " (From LLM)"
+        if os.path.exists(vector_store_path):
+            db = FAISS.load_local(vector_store_path, embeddings=embedding_model, allow_dangerous_deserialization=True)
+            print("✅ Vector store loaded")
+        else:
+            print("📄 No vector store found — re-embedding PDF")
+            loader = PyPDFLoader(full_path)
+            pages = loader.load_and_split()
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            docs = text_splitter.split_documents(pages)
+            db = FAISS.from_documents(docs, embedding_model)
+            db.save_local(vector_store_path)
+            print(f"💾 Saved vector store at {vector_store_path}")
+
+        print("🔍 Performing similarity search")
+        relevant_docs = db.similarity_search(query)
+
+        print("🤖 Calling LLM for final answer")
+        chain = load_qa_chain(Ollama(model=model), chain_type="stuff")
+        answer = chain.run(input_documents=relevant_docs, question=query)
+
+        store_cached_answer(full_path, query, answer)
+        print("✅ Answer generated and cached")
+
+        return answer + " (From LLM)"
+
+    except Exception as e:
+        print("❌ Ask KB Exception:", str(e))
+        import traceback
+        traceback.print_exc()
+        raise e
+
 
 # === Read PDF Text for TTS ===
 def read_kb_pdf(path):
@@ -201,6 +230,7 @@ def read_kb_pdf(path):
     loader = PyPDFLoader(full_path)
     docs = loader.load()
     return "\n".join([page.page_content for page in docs])
+
 
 # === List KB Folders Based on Allowed Access ===
 def list_specific_kb_folders(allowed_folders):
@@ -221,12 +251,13 @@ def list_specific_kb_folders(allowed_folders):
             })
     return filtered_kb_list
 
+
 def extract_text_from_pdf(relative_path):
     """
     Given a relative PDF path like Standard/Standard1/story.pdf, return the text.
     """
     full_path = os.path.join(KB_ROOT, relative_path.replace("/", os.sep))
-    
+
     if not os.path.isfile(full_path):
         return None
 
@@ -243,7 +274,7 @@ def list_cached_questions(pdf_path):
     # If incoming pdf_path is relative (like Standard/Standard1/story.pdf), convert to full path
     if not os.path.isabs(pdf_path):
         pdf_path = os.path.join(KB_ROOT, pdf_path.replace("/", os.sep))
-    
+
     questions = []
     docs = cache_col.find({"pdf_path": pdf_path})
     for doc in docs:
@@ -252,7 +283,3 @@ def list_cached_questions(pdf_path):
             "hit_count": doc.get("hit_count", 1)
         })
     return questions
-
-
-
-
