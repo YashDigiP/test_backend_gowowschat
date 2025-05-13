@@ -75,7 +75,7 @@ def store_cached_answer(pdf_path, query, answer):
 def list_kb_folders():
     kb_list = []
 
-    print(f"📂 Scanning KB Root Path: {KB_ROOT}")
+    print(f"📂 Scanning KB Root Path1: {KB_ROOT}")
     print(f"📂 KB Root Contents: {os.listdir(KB_ROOT)}")
 
     for top in os.listdir(KB_ROOT):

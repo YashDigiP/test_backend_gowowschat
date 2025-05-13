@@ -26,6 +26,7 @@ def register_kb_routes(app):
     def api_list_kb_folders():
         jwt_data = get_jwt()
         allowed_folders = jwt_data.get('allowed_folders', [])
+        print(allowed_folders)
         print(f"🪪 JWT allowed_folders: {allowed_folders}")  # <<< add this
         folders = list_specific_kb_folders(allowed_folders)
         return jsonify(folders)
