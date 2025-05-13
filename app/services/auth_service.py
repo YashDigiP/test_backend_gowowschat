@@ -1,10 +1,15 @@
+import certifi
 from pymongo import MongoClient
 from passlib.context import CryptContext
 from flask_jwt_extended import create_access_token
 from datetime import timedelta
 
 # 🔌 Connect to MongoDB
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient(
+    "mongodb+srv://nirajo:Niraj1234@cluster0.bw2xzbl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    tls=True,
+    tlsCAFile=certifi.where()
+)
 db = client["gowowschat_db"]
 user_col = db["user_master"]
 
