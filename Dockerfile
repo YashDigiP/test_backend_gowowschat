@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ .
 
 # Copy kb Folder
-COPY kb/ .
+COPY kb/ ./kb
 
 # Set the port for Cloud Run
 EXPOSE 8080
