@@ -186,6 +186,7 @@ def upload_pdf():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    print("chat")
     data = request.get_json()
     message = data.get("message")
     task_id = data.get("task_id", "default")

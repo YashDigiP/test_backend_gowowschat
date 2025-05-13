@@ -20,4 +20,5 @@ COPY app/ .
 EXPOSE 8080
 
 # Run using gunicorn on port 8080 if Flask or FastAPI is used
-CMD exec gunicorn --bind :8080 server:app --workers=1 --timeout=120
+CMD ["uvicorn", "server:app", "--reload", "--host", "0.0.0.0", "--port", "8080"]
+

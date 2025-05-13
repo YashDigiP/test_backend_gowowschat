@@ -1,4 +1,4 @@
-# from .llm_routes import register_llm_routes
+from .llm_routes import register_llm_routes
 # from .db_routes import register_db_routes
 # from .kb_routes import register_kb_routes
 # from .export_routes import register_export_routes
@@ -13,7 +13,7 @@ from flask import send_file, abort
 import os
 
 def register_routes(app):
-    # register_llm_routes(app)
+    register_llm_routes(app)
     # register_pdf_routes(app)
     # register_db_routes(app)
     # register_kb_routes(app)

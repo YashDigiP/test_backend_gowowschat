@@ -20,7 +20,7 @@ def handle_chat(request, use_gemma=False):
     try:
         model = LLM_MODELS["normal_chat"]
         print(f"🔍 Using model for Normal Chat: {model}")
-        llm = ChatOllama(model=model)
+        llm = ChatOllama(model=model , base_url= "http://34.93.136.125:11434")
         safe_message = apply_pg13_prompt(message)
         response = llm.invoke(safe_message).content.strip()
 
@@ -44,13 +44,11 @@ def handle_prompt(request):
         return jsonify({"prompts": []})
 
     try:
-        llm = ChatOllama(model=LLM_MODELS["normal_chat"])
+        llm = ChatOllama(model=LLM_MODELS["normal_chat"], base_url="http://34.93.136.125:11434")
         prompt = f"Based on this response, suggest 3 relevant follow-up user questions as a list:\n\n'{saathi_reply}'"
         print(prompt)
         result = llm.invoke(prompt).content.strip()
-        print(3)
         suggestions = [line.strip("-• ").strip() for line in result.splitlines() if line.strip()]
-        print(4)
 
         return jsonify({"prompts": suggestions[:3]})
 

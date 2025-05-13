@@ -199,6 +199,7 @@ def chat():
             return jsonify({"error": "⛔ Stopped by user."})
         return jsonify({"response": response})
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
     finally:
         active_tasks.pop(task_id, None)
