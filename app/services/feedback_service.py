@@ -1,9 +1,11 @@
 # services/feedback_service.py
-
+import os
 from pymongo import MongoClient
 from datetime import datetime
 
-client = MongoClient("mongodb://localhost:27017/")
+
+mongodb_url = os.getenv("MONGODB_URL")
+client = MongoClient(mongodb_url)
 db = client["gowowschat_db"]
 feedback_col = db["response_feedback"]
 

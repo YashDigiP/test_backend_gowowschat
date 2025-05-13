@@ -1,5 +1,5 @@
 # outline_service.py
-
+import os
 from langchain_ollama import ChatOllama
 from pptx import Presentation
 from pptx.util import Inches
@@ -10,13 +10,15 @@ from reportlab.pdfgen import canvas
 import io
 from services.llm_config import LLM_MODELS
 
+Base_url = os.getenv("BASE_URL")
+
 def generate_outline(text, use_gemma=False):
     """
     Generate a professional PowerPoint outline based on input text.
     """
     model = LLM_MODELS["generate_insights"]
     print(f"📝 Using model for outline generation: {model}")
-    llm = ChatOllama(model=model)
+    llm = ChatOllama(model=model, base_url=Base_url)
     prompt = f"""
 You are an expert Presentation Designer.
 

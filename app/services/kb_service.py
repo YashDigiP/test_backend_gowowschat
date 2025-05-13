@@ -25,9 +25,10 @@ os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 # === Embedding & Mongo Setup ===
 model = LLM_MODELS["ask_kb"]
 print(f"🔍 Using model for Ask KB: {model}")
-embedding_model = OllamaEmbeddings(model="nomic-embed-text",base_url= "http://34.93.136.125:11434")
-client = MongoClient(
-    "mongodb+srv://nirajo:Niraj1234@cluster0.bw2xzbl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+base_url = os.getenv("BASE_URL")
+mongodb_url = os.getenv("MONGODB_URL")
+embedding_model = OllamaEmbeddings(model="nomic-embed-text",base_url= base_url)
+client = MongoClient(mongodb_url,
     tls=True,
     tlsCAFile=certifi.where()
 )
@@ -209,7 +210,7 @@ def ask_kb_path(path, query):
         relevant_docs = db.similarity_search(query)
 
         print("🤖 Calling LLM for final answer")
-        chain = load_qa_chain(Ollama(model=model,base_url= "http://34.93.136.125:11434"), chain_type="stuff")
+        chain = load_qa_chain(Ollama(model=model,base_url= base_url), chain_type="stuff")
         answer = chain.run(input_documents=relevant_docs, question=query)
 
         store_cached_answer(full_path, query, answer)

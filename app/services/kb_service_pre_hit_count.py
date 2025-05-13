@@ -12,16 +12,20 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+from app.services.kb_service import base_url
+
 # === Paths ===
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 KB_ROOT = os.path.join(BASE_DIR, "kb")
 VECTOR_STORE_DIR = os.path.join(BASE_DIR, "vector_stores")
 os.makedirs(KB_ROOT, exist_ok=True)
 os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 
 # === Embedding & Mongo Setup ===
-embedding_model = OllamaEmbeddings(model="mistral")
-client = MongoClient("mongodb://localhost:27017/")
+Base_url = os.getenv("BASE_URL")
+mongodb_url = os.getenv("MONGODB_URL")
+embedding_model = OllamaEmbeddings(model="mistral", base_url=Base_url)
+client = MongoClient(mongodb_url)
 db = client["gowowschat_db"]
 cache_col = db["kb_answer_cache"]
 
@@ -162,7 +166,7 @@ def ask_kb_path(path, query):
         db.save_local(vector_store_path)
 
     relevant_docs = db.similarity_search(query)
-    chain = load_qa_chain(Ollama(model="mistral"), chain_type="stuff")
+    chain = load_qa_chain(Ollama(model="mistral", base_url=Base_url), chain_type="stuff")
     answer = chain.run(input_documents=relevant_docs, question=query)
 
     store_cached_answer(full_path, query, answer)

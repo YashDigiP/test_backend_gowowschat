@@ -1,12 +1,16 @@
+import os
+
 import certifi
 from pymongo import MongoClient
 from passlib.context import CryptContext
 from flask_jwt_extended import create_access_token
 from datetime import timedelta
 
+
 # 🔌 Connect to MongoDB
-client = MongoClient(
-    "mongodb+srv://nirajo:Niraj1234@cluster0.bw2xzbl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+mongodb_url = os.getenv("MONGODB_URL")
+
+client = MongoClient(mongodb_url,
     tls=True,
     tlsCAFile=certifi.where()
 )

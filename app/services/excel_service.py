@@ -10,6 +10,8 @@ from langchain.embeddings import OllamaEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import tempfile
 
+Base_url = os.getenv("BASE_URL")
+
 # 🧠 In-memory stores
 excel_data_store = {}
 duckdb_connection = duckdb.connect(database=':memory:')
@@ -42,7 +44,7 @@ def process_excel_upload(request):
         full_text = "\n\n".join(text_chunks)
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         docs = splitter.create_documents([full_text])
-        embeddings = OllamaEmbeddings(model="nomic-embed-text")
+        embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Base_url)
         vectorstore = FAISS.from_documents(docs, embeddings)
 
         return jsonify({"message": f"✅ Excel uploaded and processed successfully."})
@@ -73,7 +75,7 @@ User Question: {safe_question}
 
 Write a concise SQL query that answers this question using DuckDB syntax. Only include one SQL statement and no explanations.
 """
-            llm = ChatOllama(model="mistral")
+            llm = ChatOllama(model="mistral", base_url=Base_url)
             sql_query = llm.invoke(sql_prompt).content.strip()
 
             duck_result = duckdb_connection.execute(sql_query).fetchdf()
@@ -106,7 +108,7 @@ User Question:
 
 Answer:
 """
-            llm = ChatOllama(model="mistral")
+            llm = ChatOllama(model="mistral", base_url=Base_url)
             response = llm.invoke(prompt).content.strip()
             return jsonify({"response": response})
 

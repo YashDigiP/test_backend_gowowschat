@@ -10,6 +10,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import FAISS
 
+Base_url = os.getenv("BASE_URL")
+
 def get_hashed_path(relative_path: str) -> str:
     normalized = os.path.normpath(relative_path).replace("\\", "/")
     return hashlib.sha256(normalized.encode()).hexdigest()
@@ -21,7 +23,7 @@ CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
 os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
-embedding_model = OllamaEmbeddings(model="nomic-embed-text")
+embedding_model = OllamaEmbeddings(model="nomic-embed-text", base_url=Base_url)
 
 def get_all_pdfs_recursively(folder: str) -> List[str]:
     return [

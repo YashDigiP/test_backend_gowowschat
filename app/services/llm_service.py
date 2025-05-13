@@ -1,3 +1,4 @@
+import os
 from flask import request, jsonify
 from langchain_ollama import ChatOllama
 from services.llm_utils import apply_pg13_prompt
@@ -6,6 +7,8 @@ from services.llm_config import LLM_MODELS
 
 # Track active tasks
 active_tasks = {}
+
+Base_url = os.getenv("BASE_URL")
 
 def handle_chat(request, use_gemma=False):
     data = request.get_json()
@@ -20,7 +23,7 @@ def handle_chat(request, use_gemma=False):
     try:
         model = LLM_MODELS["normal_chat"]
         print(f"🔍 Using model for Normal Chat: {model}")
-        llm = ChatOllama(model=model , base_url= "http://34.93.136.125:11434")
+        llm = ChatOllama(model=model , base_url= Base_url)
         safe_message = apply_pg13_prompt(message)
         response = llm.invoke(safe_message).content.strip()
 
@@ -44,7 +47,7 @@ def handle_prompt(request):
         return jsonify({"prompts": []})
 
     try:
-        llm = ChatOllama(model=LLM_MODELS["normal_chat"], base_url="http://34.93.136.125:11434")
+        llm = ChatOllama(model=LLM_MODELS["normal_chat"], base_url=Base_url)
         prompt = f"Based on this response, suggest 3 relevant follow-up user questions as a list:\n\n'{saathi_reply}'"
         print(prompt)
         result = llm.invoke(prompt).content.strip()

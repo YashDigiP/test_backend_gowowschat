@@ -12,6 +12,7 @@ import PyPDF2
 UPLOAD_FOLDER = "uploaded_pdfs"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 pdf_text_store = {}
+Base_url = os.getenv("BASE_URL")
 
 def process_pdf_upload(request):
     if "pdf" not in request.files:
@@ -44,7 +45,7 @@ def process_ask_pdf(request):
     try:
         model = LLM_MODELS["ask_pdf"]
         print(f"🔍 Using model for Ask PDF: {model}")
-        llm = ChatOllama(model=model)
+        llm = ChatOllama(model=model, base_url=Base_url)
         safe_question = apply_pg13_prompt(question)
         prompt = f"Answer the question based on this PDF:\n\n{pdf_text_store['latest'][:4000]}\n\nQuestion: {safe_question}"
         response = llm.invoke(prompt).content.strip()

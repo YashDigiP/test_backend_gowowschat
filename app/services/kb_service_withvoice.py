@@ -10,14 +10,17 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+from app.services.kb_service import base_url
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 KB_ROOT = os.path.join(BASE_DIR, "kb")
 VECTOR_STORE_DIR = os.path.join(BASE_DIR, "vector_stores")
+Base_url = os.getenv("BASE_URL")
 
 os.makedirs(KB_ROOT, exist_ok=True)
 os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 
-embedding_model = OllamaEmbeddings(model="mistral")
+embedding_model = OllamaEmbeddings(model="mistral", base_url=Base_url)
 
 def list_kb_folders():
     kb_list = []
@@ -82,7 +85,7 @@ def ask_kb_path(path, query):
         db.save_local(vector_store_path)
 
     relevant_docs = db.similarity_search(query)
-    chain = load_qa_chain(Ollama(model="mistral"), chain_type="stuff")
+    chain = load_qa_chain(Ollama(model="mistral", base_url=Base_url), chain_type="stuff")
     return chain.run(input_documents=relevant_docs, question=query)
 
 def read_kb_pdf(path):

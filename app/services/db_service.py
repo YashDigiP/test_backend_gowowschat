@@ -18,6 +18,7 @@ DB_URI = "postgresql://postgres:admin@localhost:5432/mfdb"
 EXPORT_FOLDER = "exports"
 os.makedirs(EXPORT_FOLDER, exist_ok=True)
 engine = create_engine(DB_URI)
+Base_url = os.getenv("BASE_URL")
 
 similar_map = {
     "clients": "client",
@@ -53,7 +54,7 @@ def handle_db_query(request):
         prompt = f"{system_prompt}\n\nQuestion: {safe_question}"
         model = LLM_MODELS["ask_db"]
         print(f"🧠 Using model for Ask DB: {model}")
-        llm = ChatOllama(model=model)
+        llm = ChatOllama(model=model, base_url=Base_url)
         raw_response = llm.invoke(prompt)
         print("🧠 Raw LLM SQL:\n", raw_response.content if hasattr(raw_response, "content") else str(raw_response))
         response = raw_response.content.strip() if hasattr(raw_response, "content") else str(raw_response)

@@ -8,8 +8,10 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 from langchain_ollama import OllamaEmbeddings
 from services.llm_config import LLM_MODELS
 
-embedding_model = OllamaEmbeddings(model="nomic-embed-text")
+Base_url = os.getenv("BASE_URL")
+embedding_model = OllamaEmbeddings(model="nomic-embed-text", base_url=Base_url)
 VECTOR_STORE_DIR = "vector_stores"
+
 
 def embed_site_handler(request):
     data = request.get_json()
@@ -43,7 +45,7 @@ def handle_web(request):
         retriever = vectordb.as_retriever()
         model = LLM_MODELS["ask_website"]
         print(f"🌐 Using model for Ask Website (handle_web): {model}")
-        llm = ChatOllama(model=model)
+        llm = ChatOllama(model=model, base_url=Base_url)
         qa = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
         response = qa.invoke({"query": question})["result"]
         return jsonify({"response": response})
@@ -63,7 +65,7 @@ def handle_web_live(request):
         retriever = vectordb.as_retriever()
         model = LLM_MODELS["ask_website"]
         print(f"🌐 Using model for Ask Website (handle_web_live): {model}")
-        llm = ChatOllama(model=model)
+        llm = ChatOllama(model=model, base_url=Base_url)
         qa = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
         response = qa.invoke({"query": question})["result"]
         return jsonify({"response": response})
@@ -83,7 +85,7 @@ def handle_web_lite(request):
         retriever = vectordb.as_retriever()
         model = LLM_MODELS["ask_website"]
         print(f"🌐 Using model for Ask Website (handle_web_lite): {model}")
-        llm = ChatOllama(model=model)
+        llm = ChatOllama(model=model, base_url=Base_url)
         qa = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
         response = qa.invoke({"query": question})["result"]
         return jsonify({"response": response})
