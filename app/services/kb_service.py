@@ -14,7 +14,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from services.llm_config import LLM_MODELS
 
 # === Paths ===
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 KB_ROOT = os.path.join(BASE_DIR, "kb")
 VECTOR_STORE_DIR = os.path.join(BASE_DIR, "vector_stores")
 os.makedirs(KB_ROOT, exist_ok=True)
