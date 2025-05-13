@@ -27,35 +27,35 @@ def register_routes(app):
 
     app.static_folder = 'kb'
 
-    # @app.route("/preview/<path:folder>/<path:subfolder>/<path:filename>", methods=["GET"])
-    # def preview_pdf(folder, subfolder, filename):
-    #     kb_base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "kb"))
-    #     print(f"📁 Serving static files from base folder: {kb_base}")
-    #     print(f"📥 Requested path: /preview/{folder}/{subfolder}/{filename}")
-    #
-    #     if not filename.endswith(".pdf"):
-    #         possible_path = os.path.join(kb_base, folder, subfolder, f"{filename}.pdf")
-    #         print(f"🔍 Trying with .pdf: {possible_path}")
-    #         if os.path.exists(possible_path):
-    #             filename = f"{filename}.pdf"
-    #         else:
-    #             possible_path = os.path.join(kb_base, folder, subfolder, filename)
-    #             print(f"🔍 Trying without extension: {possible_path}")
-    #             if not os.path.exists(possible_path):
-    #                 print("❌ File not found even without extension.")
-    #                 return abort(404)
-    #     else:
-    #         possible_path = os.path.join(kb_base, folder, subfolder, filename)
-    #         print(f"🔍 Using exact filename: {possible_path}")
-    #         if not os.path.exists(possible_path):
-    #             print("❌ File with .pdf extension not found.")
-    #             return abort(404)
-    #
-    #     print(f"✅ Sending file: {possible_path}")
-    #     return send_file(
-    #         possible_path,
-    #         mimetype='application/pdf',
-    #         download_name=filename,
-    #         as_attachment=False
-    #     )
+    @app.route("/preview/<path:folder>/<path:subfolder>/<path:filename>", methods=["GET"])
+    def preview_pdf(folder, subfolder, filename):
+        kb_base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "kb"))
+        print(f"📁 Serving static files from base folder: {kb_base}")
+        print(f"📥 Requested path: /preview/{folder}/{subfolder}/{filename}")
+
+        if not filename.endswith(".pdf"):
+            possible_path = os.path.join(kb_base, folder, subfolder, f"{filename}.pdf")
+            print(f"🔍 Trying with .pdf: {possible_path}")
+            if os.path.exists(possible_path):
+                filename = f"{filename}.pdf"
+            else:
+                possible_path = os.path.join(kb_base, folder, subfolder, filename)
+                print(f"🔍 Trying without extension: {possible_path}")
+                if not os.path.exists(possible_path):
+                    print("❌ File not found even without extension.")
+                    return abort(404)
+        else:
+            possible_path = os.path.join(kb_base, folder, subfolder, filename)
+            print(f"🔍 Using exact filename: {possible_path}")
+            if not os.path.exists(possible_path):
+                print("❌ File with .pdf extension not found.")
+                return abort(404)
+
+        print(f"✅ Sending file: {possible_path}")
+        return send_file(
+            possible_path,
+            mimetype='application/pdf',
+            download_name=filename,
+            as_attachment=False
+        )
 
