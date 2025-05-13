@@ -2,6 +2,8 @@
 
 import hashlib
 import os
+
+import certifi
 from flask import jsonify
 from datetime import datetime
 from pymongo import MongoClient
@@ -23,8 +25,12 @@ os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 # === Embedding & Mongo Setup ===
 model = LLM_MODELS["ask_kb"]
 print(f"🔍 Using model for Ask KB: {model}")
-embedding_model = OllamaEmbeddings(model="nomic-embed-text")
-client = MongoClient("mongodb://localhost:27017/")
+embedding_model = OllamaEmbeddings(model="nomic-embed-text",base_url= "http://34.93.136.125:11434")
+client = MongoClient(
+    "mongodb+srv://nirajo:Niraj1234@cluster0.bw2xzbl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    tls=True,
+    tlsCAFile=certifi.where()
+)
 db = client["gowowschat_db"]
 cache_col = db["kb_answer_cache"]
 
