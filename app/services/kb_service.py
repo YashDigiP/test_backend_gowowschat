@@ -209,7 +209,7 @@ def ask_kb_path(path, query):
         relevant_docs = db.similarity_search(query)
 
         print("🤖 Calling LLM for final answer")
-        chain = load_qa_chain(Ollama(model=model), chain_type="stuff")
+        chain = load_qa_chain(Ollama(model=model,base_url= "http://34.93.136.125:11434"), chain_type="stuff")
         answer = chain.run(input_documents=relevant_docs, question=query)
 
         store_cached_answer(full_path, query, answer)
