@@ -18,7 +18,7 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}, supports_cred
 
 # 🔐 Add JWT config
 app.config["JWT_SECRET_KEY"] = "super-secret"  # TODO: change this before production!
-# app.config["DEBUG"] = True  # Enable auto-reload in development
+#app.config["DEBUG"] = True  # Enable auto-reload in development
 jwt = JWTManager(app)
 
 # ✅ Register all routes

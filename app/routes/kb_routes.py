@@ -4,7 +4,6 @@ import os
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
 
-
 from services.kb_service import (
     list_kb_folders,
     list_kb_folder,
@@ -14,7 +13,8 @@ from services.kb_service import (
     KB_ROOT,
     read_kb_pdf,
     list_cached_questions,
-    extract_text_from_pdf
+    extract_text_from_pdf,
+    list_cached_questions
 )
 from services.pg13_guard import pg13_guard
 
@@ -143,7 +143,6 @@ def register_kb_routes(app):
             return jsonify({"error": "Missing pdf_path"}), 400
 
         try:
-            from services.kb_service import list_cached_questions
             questions = list_cached_questions(pdf_path)
             return jsonify({"questions": questions})
         except Exception as e:
@@ -162,9 +161,6 @@ def register_kb_routes(app):
 
         text = extract_text_from_pdf(full_path)
         return jsonify({"text": text})
-
-
-
 
 
     app.register_blueprint(kb_bp)

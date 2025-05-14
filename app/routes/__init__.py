@@ -21,7 +21,7 @@ def register_routes(app):
     register_web_routes(app)
     register_auth_routes(app) 
     register_outline_routes(app)
-    # register_feedback_routes(app)
+    register_feedback_routes(app)
     # register_excel_routes(app)
     register_curated_routes(app)
 
