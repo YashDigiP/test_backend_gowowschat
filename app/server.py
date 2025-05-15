@@ -27,7 +27,7 @@ register_routes(app)
 
 @app.after_request
 def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = ["http://localhost:8080", "https://gowows-web-252628919239.asia-south1.run.app", "http://localhost:5173"]
+    response.headers["Access-Control-Allow-Origin"] = "https://gowows-web-252628919239.asia-south1.run.app"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
     return response
