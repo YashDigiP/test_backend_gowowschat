@@ -79,15 +79,22 @@ def handle_web_lite(request):
     if not url or not question:
         return jsonify({"error": "Missing URL or question"}), 400
     try:
+        print("Step 1: Starting loader...")
         loader = WebBaseLoader(url)
         docs = loader.load()
+        print("Step 2: Loader finished. Docs length:", len(docs))
+        print("Step 3: Starting vector DB creation...")
         vectordb = FAISS.from_documents(docs, embedding_model)
+        print("Step 4: Vector DB created successfully.")
         retriever = vectordb.as_retriever()
         model = LLM_MODELS["ask_website"]
         print(f"🌐 Using model for Ask Website (handle_web_lite): {model}")
         llm = ChatOllama(model=model, base_url=Base_url)
+        print("Step 5: llm model intiallized successfully.")
         qa = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
+        print("Step 6: created chain successfully.")
         response = qa.invoke({"query": question})["result"]
+        print("Step 7: response generated successfully.")
         return jsonify({"response": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
